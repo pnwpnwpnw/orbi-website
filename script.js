@@ -310,3 +310,10 @@ if (!calm) {
   renderOnce(performance.now() / 1000);
   start();
 })();
+
+// Past the hero, Orbi docks into the corner so the atoms keep orbiting while you scroll.
+(() => {
+  const slot = document.getElementById("mascot-slot"), wrap = document.getElementById("mascot-wrap");
+  if (!slot || !wrap || !("IntersectionObserver" in window)) return;
+  new IntersectionObserver(([e]) => wrap.classList.toggle("docked", !e.isIntersecting && e.boundingClientRect.bottom < 0)).observe(slot);
+})();
