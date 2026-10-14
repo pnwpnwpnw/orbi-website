@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbi — a little bot for Claude Code on your Mac</title>
+<meta name="description" content="Orbi is a small white bot that lives in the corner of your Mac's screen, so you can use Claude Code without opening a terminal. Free, Apple silicon only.">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Orbi — a little bot for Claude Code on your Mac">
+<meta property="og:description" content="A small white bot in the corner of your screen: a free companion for Claude Code. Click it, ask something, and watch it work. Apple silicon only.">
+<meta property="og:image" content="assets/shortcut-poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/orbi.svg">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="#top"><img class="logo" src="assets/orbi.svg" alt="" width="32" height="29"> Orbi</a>
+  <nav>
+    <a href="#features">Features</a>
+    <a class="keep gh" href="https://github.com/pnwpnwpnw/orbi-app" target="_blank" rel="noopener" aria-label="Orbi releases on GitHub" title="Releases on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+    <a href="#see">See it</a>
+    <a href="#install">Install</a>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode"></button>
+  </nav>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="mascot-wrap">
+      <p class="bubble" id="bubble" aria-hidden="true">Click me!</p>
+      <button class="mascot" id="mascot" type="button" aria-label="Orbi, the mascot. Click to say hi.">
+        <svg viewBox="0 0 220 200" width="240" height="218" aria-hidden="true">
+          <defs>
+            <clipPath id="body-clip"><rect x="10" y="10" width="200" height="180" rx="90"/></clipPath>
+            <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ececec"/><stop offset="1" stop-color="#dcdcdc"/>
+            </linearGradient>
+          </defs>
+          <g class="body">
+            <rect x="10" y="10" width="200" height="180" rx="90" fill="#fff" stroke="#e4e4e4"/>
+            <g clip-path="url(#body-clip)"><ellipse cx="110" cy="205" rx="130" ry="62" fill="url(#shade)"/></g>
+            <g class="eyes" id="eyes">
+              <ellipse class="eye" cx="76" cy="92" rx="11" ry="17"/>
+              <ellipse class="eye" cx="144" cy="92" rx="11" ry="17"/>
+            </g>
+          </g>
+        </svg>
+      </button>
+    </div>
+    <h1>Meet Orbi.<br>Your Claude Code companion.</h1>
+    <p class="lead">Orbi is a small white bot that lives in the corner of your Mac's screen. Click it, ask Claude Code something, and watch it work.</p>
+    <div class="cta">
+      <a class="btn" href="#install">Download for Mac</a>
+      <a class="btn btn-ghost" href="#see">Watch the demo</a>
+    </div>
+    <p class="fine">Free · macOS 14+ · Apple silicon (M1 or newer) · No servers, no account</p>
+  </section>
+
+  <section class="band" id="features">
+    <div class="wrap">
+      <h2>Small bot. Big view of what Claude is doing.</h2>
+      <div class="grid">
+        <article>
+          <h3>Click, ask, done</h3>
+          <p>Click Orbi or press <kbd>⌃</kbd><kbd>⇧</kbd><kbd>Space</kbd> from any app. Short replies appear right in his speech bubble.</p>
+        </article>
+        <article>
+          <h3>Quick-ask bar</h3>
+          <p><kbd>⌃</kbd><kbd>⌘</kbd><kbd>Space</kbd> opens a round input capsule. Type, press Return, pick the model and folder.</p>
+        </article>
+        <article>
+          <h3>Acts out the work</h3>
+          <p>He scans while reading, taps while editing, peers around while searching and hunkers down while running a command.</p>
+        </article>
+        <article>
+          <h3>Answer permissions in place</h3>
+          <p>When Claude wants to run something, a card offers <b>Allow</b>, <b>Always</b> or <b>Deny</b>, with a chime so you don't miss it.</p>
+        </article>
+        <article>
+          <h3>Watches the Claude app</h3>
+          <p>Follows your conversations, shows each step, and tells you when one finishes. One click jumps to it.</p>
+        </article>
+        <article>
+          <h3>Helpers pop out</h3>
+          <p>When it starts sub-agents, a tiny Orbi appears beside him for each one and hops away when it's done.</p>
+        </article>
+        <article>
+          <h3>Usage at a glance</h3>
+          <p>A thin bar above his name tag shows your session or weekly limit, and warns you at 80% and 95%.</p>
+        </article>
+        <article>
+          <h3>Full chat window</h3>
+          <p>Click the menu-bar icon for saved conversations, formatted replies, code blocks, light and dark looks.</p>
+        </article>
+        <article>
+          <h3>Eats your files</h3>
+          <p>Drag a file or photo onto Orbi and he eats it. It goes along with your next message.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap see" id="see">
+    <h2>See it move</h2>
+    <div class="videos">
+      <figure>
+        <video src="assets/intro.mp4" poster="assets/intro-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Orbi intro"></video>
+        <figcaption>Meet Orbi</figcaption>
+      </figure>
+      <figure>
+        <video src="assets/shortcut.mp4" poster="assets/shortcut-poster.jpg" controls muted loop playsinline preload="none" aria-label="Orbi keyboard shortcut demo"></video>
+        <figcaption>One shortcut from any app</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="band dark" id="install">
+    <div class="wrap narrow">
+      <h2>Install in a minute</h2>
+      <ol class="steps">
+        <li><span>1</span><p>Download <code>Orbi-…-macOS-arm64.zip</code> from the <a href="https://github.com/pnwpnwpnw/orbi-app/releases/latest" id="release-link">latest release</a> and unzip it.</p></li>
+        <li><span>2</span><p>Move <code>Orbi.app</code> to <code>/Applications</code>.</p></li>
+        <li><span>3</span><p>First time only: right-click the app, choose <b>Open</b>, then click <b>Open</b>. If macOS still refuses, go to System Settings › Privacy &amp; Security and click <b>Open Anyway</b>.</p></li>
+      </ol>
+      <p class="note">You need a Mac with Apple silicon (M1 or newer) and macOS 14 or later; it does not run on Intel Macs. Orbi isn't signed with an Apple developer account, so macOS asks once. You also need Claude Code installed and signed in (run <code>claude /login</code> once).</p>
+      <a class="btn btn-invert" id="download-btn" href="https://github.com/pnwpnwpnw/orbi-app/releases/latest">Download latest release</a>
+    </div>
+  </section>
+
+  <section class="wrap faq">
+    <h2>Good to know</h2>
+    <details><summary>Does it cost anything?</summary><p>No. Orbi is free to use and to share (it is not open source). It talks to the Claude Code already installed on your machine, so your own Claude plan applies.</p></details>
+    <details><summary>Does Orbi send anything anywhere?</summary><p>No telemetry and no accounts. The only thing Orbi does on the network is ask GitHub, about once a day, whether a newer version is out (you can switch that off), and download it when you accept an update.</p></details>
+    <details><summary>Does Orbi see my login?</summary><p>No. Usage limits are read by asking Claude Code itself, so Orbi never sees your credentials.</p></details>
+    <details><summary>Can it approve things without me?</summary><p>No. Permission alerts only pass Claude's request to Orbi so you can answer. It can't approve, deny or delay anything on its own.</p></details>
+    <details><summary>Why does it ask for Accessibility access?</summary><p>Only for the optional features that read or type into the Claude app window. Everything else works without it.</p></details>
+  </section>
+
+</main>
+
+<footer>
+  <img class="logo" src="assets/orbi.svg" alt="" width="26" height="24">
+  <span>Orbi · a free companion for Claude Code<br>An independent side project, not affiliated with Anthropic.</span>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
