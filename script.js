@@ -111,7 +111,7 @@ if (!calm) {
   // The app draws a 46 pt wide body; the site body is 200 units wide.
   const K = 200 / 46;
   const CENTER = { x: 110, y: 100 - 3 * K };         // the app lifts the atom's centre 3 pt
-  const R = 30 * K;                                  // orbit radius
+  const R = 34 * K;                                  // orbit radius
   const DOT = 3.1 * K * 0.8;                         // dot radius (app: 3.1 pt)
   const TILT = (68 * Math.PI) / 180;
   const LAP = 2;                                     // seconds per lap while "working"
