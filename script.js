@@ -125,7 +125,8 @@ if (!calm) {
   const SLOT_SIZE = [1, 1.1, 0.92, 1.2];                                                    // slightly different loops so paths do not coincide
   const ring3 = (a, m = 1) => {
     const z = RING_RZ * m * Math.sin(a);                                                    // z > 0 is toward the viewer
-    return { x: 110 + RING_RX * m * Math.cos(a), y: RING_Y + RING_TILT * z, z };
+    const feet = 190;                                                                       // the bottom edge of Orbi's body
+    return { x: 110 + RING_RX * m * Math.cos(a), y: feet - (9.5 * K / 2) * (1 + 0.28 * z / (RING_RZ * m)), z };   // helpers stand on that line
   };
   const EYES = [{ x: 76, y: 92 }, { x: 144, y: 92 }];
   const calmMotion = matchMedia("(prefers-reduced-motion: reduce)").matches || /[?&]still\b/.test(location.search); // ?still previews the reduced-motion layout
@@ -142,13 +143,16 @@ if (!calm) {
     const g = el("g", { "data-connection": name }, back);
     const glow = el("circle", { fill: color, filter: "url(#atom-glow)" }, g);
     const dot = el("circle", { fill: color }, g);
-    return { g, glow, dot, color, plain: color === "#000000" || color === "#FFFFFF", psi: (i * Math.PI) / CONNECTIONS.length, i, spd: 1, spdT: 1, rad: 1, radT: 1, next: 0, angle: (i * 2 * Math.PI) / CONNECTIONS.length, front: false };
+    return { g, glow, dot, color, plain: color === "#000000" || color === "#FFFFFF", psi: (i * Math.PI) / CONNECTIONS.length, i, presence: 0, active: false, spd: 1, spdT: 1, rad: 1, radT: 1, next: 0, angle: (i * 2 * Math.PI) / CONNECTIONS.length, front: false };
   });
 
   function placeAtoms(t) {
     const sway = calmMotion ? 0 : 0.5 * Math.sin((2 * Math.PI * t) / 10);
     for (const a of atoms) {
-      const r = R * a.rad, wob = calmMotion ? 0 : 1;                       // random moves: radius, tilt and plane drift a little
+      if (a.presence <= 0.002) { if (!a.hidden) { a.g.setAttribute("display", "none"); a.hidden = true; } continue; }
+      if (a.hidden) { a.g.removeAttribute("display"); a.hidden = false; }
+      const e = a.presence * a.presence * (3 - 2 * a.presence);            // a new atom spirals out of his middle, a leaving one shrinks back in
+      const r = R * a.rad * (0.35 + 0.65 * e), wob = calmMotion ? 0 : 1;                       // random moves: radius, tilt and plane drift a little
       const tilt = TILT + wob * 0.14 * Math.sin(t * 0.7 + a.i * 1.9), psi = a.psi + wob * 0.18 * Math.sin(t * 0.45 + a.i * 2.7);
       const px = r * Math.cos(a.angle), py = r * Math.sin(a.angle);
       const y1 = py * Math.cos(tilt), z1 = py * Math.sin(tilt);
@@ -156,7 +160,7 @@ if (!calm) {
       const x = x2 * Math.cos(sway) + z1 * Math.sin(sway), z = -x2 * Math.sin(sway) + z1 * Math.cos(sway);
       const cx = CENTER.x + x, cy = CENTER.y + y2;
       const depth = z / R;
-      const size = DOT * (1 + 0.28 * depth);
+      const size = DOT * (1 + 0.28 * depth) * e;
       let alpha = 0.72 + 0.28 * (depth * 0.5 + 0.5);
       const inFront = z >= 0;
       if (inFront !== a.front) { (inFront ? front : back).appendChild(a.g); a.front = inFront; }
@@ -175,6 +179,29 @@ if (!calm) {
       a.dot.setAttribute("cx", cx); a.dot.setAttribute("cy", cy); a.dot.setAttribute("r", size);
       a.dot.setAttribute("opacity", alpha);
     }
+  }
+
+  // Only up to 3 atoms are out at a time; which colors, and how many, changes at random.
+  const MAX_ATOMS = 3;
+  let nextSwap = 0, want = MAX_ATOMS;
+  function shuffleActive(t) {
+    want = Math.random() < 0.15 ? 1 : Math.random() < 0.6 ? MAX_ATOMS : 2;
+    const act = atoms.filter((a) => a.active);
+    for (let n = act.length; n > want; n--) act.splice(Math.floor(Math.random() * act.length), 1)[0].active = false;
+    if (act.length && Math.random() < 0.5) act[Math.floor(Math.random() * act.length)].active = false;   // sometimes a color is swapped out
+    nextSwap = t + 2.2 + Math.random() * 3;
+  }
+  // A new atom only comes out once there is room, so no more than 3 are ever on screen (leaving ones still count).
+  function fillActive() {
+    const shown = atoms.filter((a) => a.active || a.presence > 0.02).length;
+    const act = atoms.filter((a) => a.active).length;
+    if (act >= want || shown >= MAX_ATOMS) return;
+    const idle = atoms.filter((a) => !a.active && a.presence <= 0.02);
+    if (idle.length) idle[Math.floor(Math.random() * idle.length)].active = true;
+  }
+  function pickInitial() {
+    const order = atoms.slice().sort(() => Math.random() - 0.5);
+    order.slice(0, MAX_ATOMS).forEach((a) => (a.active = true));
   }
 
   // Reduced motion: no orbiting. Park each atom where it is clearly visible (outside his body, apart from the others).
@@ -201,7 +228,8 @@ if (!calm) {
       placed.push(spot(a, best));
     }
   }
-  if (calmMotion) restAngles();
+  pickInitial();
+  if (calmMotion) { restAngles(); atoms.forEach((a) => (a.presence = a.active ? 1 : 0)); }
 
   /* ----- Helpers: at most 4. Each runs around Orbi for about 20 s, then vanishes back inside him. ----- */
   const MAX = 4, LIFE = 20, VANISH = 0.5;
@@ -232,7 +260,7 @@ if (!calm) {
     if (inFront !== h.front) { (inFront ? helperLayer : helperBack).appendChild(h.g); h.front = inFront; }
     const travel = out * (1 - ease(q));
     const scale = Math.max(0, 1 + (calmMotion ? 0 : 0.25 * Math.sin(grow * Math.PI) * (grow < 1 ? 1 : 0)) - (1 - grow)) * (1 - q) * (1 + 0.28 * depth * travel);
-    const hop = running ? Math.abs(Math.sin(age * 9 + h.phase)) * 1.8 * K : 0;       // little running hops
+    const hop = running ? Math.abs(Math.sin(age * 9 + h.phase)) * 0.9 * K : 0;       // little running hops
     const cx = 110 + (target.x - 110) * travel;
     const cy = 100 + (target.y - 100) * travel - hop * travel;
     const w = HW * Math.max(scale, 0.001), hh = HH * Math.max(scale, 0.001);
@@ -297,7 +325,10 @@ if (!calm) {
     const t = ts / 1000;
     const dt = Math.min(0.1, last ? t - last : 0);
     last = t;
+    if (t > nextSwap) shuffleActive(t);
+    fillActive();
     for (const a of atoms) {
+      a.presence = Math.min(1, Math.max(0, a.presence + (a.active ? dt : -dt) / 0.7));
       if (t > a.next) {                                                   // every few seconds each atom picks a new pace and reach
         a.spdT = Math.random() < 0.18 ? 1.7 + Math.random() * 0.6 : 0.55 + Math.random() * 0.9;
         a.radT = 0.86 + Math.random() * 0.2;
