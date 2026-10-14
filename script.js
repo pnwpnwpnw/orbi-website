@@ -142,15 +142,17 @@ if (!calm) {
     const g = el("g", { "data-connection": name }, back);
     const glow = el("circle", { fill: color, filter: "url(#atom-glow)" }, g);
     const dot = el("circle", { fill: color }, g);
-    return { g, glow, dot, color, plain: color === "#000000" || color === "#FFFFFF", psi: (i * Math.PI) / CONNECTIONS.length, angle: (i * 2 * Math.PI) / CONNECTIONS.length, front: false };
+    return { g, glow, dot, color, plain: color === "#000000" || color === "#FFFFFF", psi: (i * Math.PI) / CONNECTIONS.length, i, spd: 1, spdT: 1, rad: 1, radT: 1, next: 0, angle: (i * 2 * Math.PI) / CONNECTIONS.length, front: false };
   });
 
   function placeAtoms(t) {
     const sway = calmMotion ? 0 : 0.5 * Math.sin((2 * Math.PI * t) / 10);
     for (const a of atoms) {
-      const px = R * Math.cos(a.angle), py = R * Math.sin(a.angle);
-      const y1 = py * Math.cos(TILT), z1 = py * Math.sin(TILT);
-      const x2 = px * Math.cos(a.psi) - y1 * Math.sin(a.psi), y2 = px * Math.sin(a.psi) + y1 * Math.cos(a.psi);
+      const r = R * a.rad, wob = calmMotion ? 0 : 1;                       // random moves: radius, tilt and plane drift a little
+      const tilt = TILT + wob * 0.14 * Math.sin(t * 0.7 + a.i * 1.9), psi = a.psi + wob * 0.18 * Math.sin(t * 0.45 + a.i * 2.7);
+      const px = r * Math.cos(a.angle), py = r * Math.sin(a.angle);
+      const y1 = py * Math.cos(tilt), z1 = py * Math.sin(tilt);
+      const x2 = px * Math.cos(psi) - y1 * Math.sin(psi), y2 = px * Math.sin(psi) + y1 * Math.cos(psi);
       const x = x2 * Math.cos(sway) + z1 * Math.sin(sway), z = -x2 * Math.sin(sway) + z1 * Math.cos(sway);
       const cx = CENTER.x + x, cy = CENTER.y + y2;
       const depth = z / R;
@@ -295,7 +297,16 @@ if (!calm) {
     const t = ts / 1000;
     const dt = Math.min(0.1, last ? t - last : 0);
     last = t;
-    for (const a of atoms) a.angle += ((2 * Math.PI) / LAP) * dt;
+    for (const a of atoms) {
+      if (t > a.next) {                                                   // every few seconds each atom picks a new pace and reach
+        a.spdT = Math.random() < 0.18 ? 1.7 + Math.random() * 0.6 : 0.55 + Math.random() * 0.9;
+        a.radT = 0.86 + Math.random() * 0.2;
+        a.next = t + 1.2 + Math.random() * 2.8;
+      }
+      a.spd += (a.spdT - a.spd) * Math.min(1, dt / 0.6);
+      a.rad += (a.radT - a.rad) * Math.min(1, dt / 0.8);
+      a.angle += ((2 * Math.PI) / LAP) * a.spd * dt;
+    }
     cull(t);
     renderOnce(t);
     raf = requestAnimationFrame(frame);
