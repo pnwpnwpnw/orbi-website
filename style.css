@@ -85,23 +85,23 @@ kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6p
 /* hero */
 .hero { text-align: center; padding: 5rem 1.25rem 6rem; max-width: 760px; margin: 0 auto; }
 
-.mascot-wrap { position: relative; width: 240px; margin: 0 auto 2rem; }
+.mascot-wrap { position: relative; width: min(310px, 92vw); margin: 0 auto 1rem; }
 .mascot { display: block; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 50%; filter: drop-shadow(0 18px 24px var(--shadow)); -webkit-tap-highlight-color: transparent; }
 .mascot:focus-visible { outline: 2px solid var(--fg); outline-offset: 6px; }
 .mascot { transform: translate(var(--tx, 0), 0) rotate(var(--tilt, 0deg)); transition: transform .25s ease-out; }
-.mascot svg { display: block; overflow: visible; transform-origin: 50% 100%; animation: breathe 4.5s ease-in-out infinite; }
+.mascot svg { display: block; width: 100%; height: auto; overflow: visible; transform-origin: 50% 100%; animation: breathe 4.5s ease-in-out infinite; }
 .mascot .body { transform-box: fill-box; transform-origin: 50% 100%; }
 .mascot .eyes { transition: transform .12s ease-out; }
 .mascot .eye { fill: #000; transform-box: fill-box; transform-origin: center; transition: transform .1s; }
 .mascot.blink .eye { transform: scaleY(.1); }
 .mascot.happy .eye { transform: scaleY(.35) translateY(-4px); }
-.mascot.hop .body { animation: hop .5s cubic-bezier(.3,.7,.4,1); }
+.mascot.hop .body { animation: pop .45s cubic-bezier(.3,.7,.4,1); }
 .mascot:active .body { transform: scale(1.04, .94); }
-.bubble { position: absolute; left: 50%; bottom: calc(100% - 4px); transform: translate(-50%, 6px); background: var(--fg); color: var(--bg); font-size: .85rem; font-weight: 600; padding: .4rem .85rem; border-radius: 999px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+.bubble { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translate(-50%, 6px); background: var(--fg); color: var(--bg); font-size: .85rem; font-weight: 600; padding: .4rem .85rem; border-radius: 999px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
 .bubble::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--fg); }
 .bubble.show { opacity: 1; transform: translate(-50%, 0); }
 @keyframes breathe { 50% { transform: scale(1.025, .975); } }
-@keyframes hop { 0% { transform: scale(1.06,.9); } 40% { transform: translateY(-26px) scale(.96,1.05); } 100% { transform: none; } }
+@keyframes pop { 0% { transform: scale(1.1,.86); } 35% { transform: translateY(-10px) scale(.95,1.07); } 70% { transform: scale(1.03,.97); } 100% { transform: none; } }
 .hero h1 { font-size: clamp(2.6rem, 8vw, 4.8rem); font-weight: 800; }
 .lead { font-size: 1.2rem; color: var(--muted); margin: 1.5rem auto 2rem; max-width: 34rem; }
 .cta { display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; }

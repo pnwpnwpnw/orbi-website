@@ -34,14 +34,15 @@
   <section class="hero">
     <div class="mascot-wrap">
       <p class="bubble" id="bubble" aria-hidden="true">Click me!</p>
-      <button class="mascot" id="mascot" type="button" aria-label="Orbi, the mascot. Click to say hi.">
-        <svg viewBox="0 0 220 200" width="240" height="218" aria-hidden="true">
+      <button class="mascot" id="mascot" type="button" aria-label="Orbi, the mascot. Press to send out a helper.">
+        <svg id="orbi-svg" viewBox="-50 -50 320 300" aria-hidden="true">
           <defs>
             <clipPath id="body-clip"><rect x="10" y="10" width="200" height="180" rx="90"/></clipPath>
             <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#ececec"/><stop offset="1" stop-color="#dcdcdc"/>
             </linearGradient>
           </defs>
+          <g id="atoms-back"></g>
           <g class="body">
             <rect x="10" y="10" width="200" height="180" rx="90" fill="#fff" stroke="#e4e4e4"/>
             <g clip-path="url(#body-clip)"><ellipse cx="110" cy="205" rx="130" ry="62" fill="url(#shade)"/></g>
@@ -50,6 +51,8 @@
               <ellipse class="eye" cx="144" cy="92" rx="11" ry="17"/>
             </g>
           </g>
+          <g id="atoms-front"></g>
+          <g id="helpers"></g>
         </svg>
       </button>
     </div>
