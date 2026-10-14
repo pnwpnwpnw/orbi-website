@@ -105,20 +105,28 @@ if (!calm) {
   const back = document.getElementById("atoms-back");
   const front = document.getElementById("atoms-front");
   const helperLayer = document.getElementById("helpers");
-  if (!svg || !back || !front || !helperLayer) return;
+  const helperBack = document.getElementById("helpers-back");
+  if (!svg || !back || !front || !helperLayer || !helperBack) return;
 
   // The app draws a 46 pt wide body; the site body is 200 units wide.
   const K = 200 / 46;
   const CENTER = { x: 110, y: 100 - 3 * K };         // the app lifts the atom's centre 3 pt
   const R = 30 * K;                                  // orbit radius
   const DOT = 3.1 * K * 0.8;                         // dot radius (app: 3.1 pt)
-  const RING = 1.3 * K * 0.5;                        // dark ring around each dot
   const TILT = (68 * Math.PI) / 180;
   const LAP = 2;                                     // seconds per lap while "working"
   const CONNECTIONS = [
     ["Claude Code", "#D97757"], ["Claude Chat", "#F2AE6B"], ["ChatGPT", "#59A6FA"], ["Vercel", "#000000"],
     ["Gmail", "#EA4335"], ["Slack", "#2EB67D"], ["Notion", "#FFFFFF"],
   ];
+  // Helpers run around Orbi on a flat horizontal loop in 3D: in front of him, out to the side, behind him, and back.
+  const RING_RX = 150, RING_RZ = 125, RING_Y = 128, RING_TILT = 0.18;
+  const SLOT_ANGLE = [0.85 * Math.PI, 0.15 * Math.PI, 0.65 * Math.PI, 0.35 * Math.PI];   // start points (all in front)
+  const SLOT_SIZE = [1, 1.1, 0.92, 1.2];                                                    // slightly different loops so paths do not coincide
+  const ring3 = (a, m = 1) => {
+    const z = RING_RZ * m * Math.sin(a);                                                    // z > 0 is toward the viewer
+    return { x: 110 + RING_RX * m * Math.cos(a), y: RING_Y + RING_TILT * z, z };
+  };
   const EYES = [{ x: 76, y: 92 }, { x: 144, y: 92 }];
   const calmMotion = matchMedia("(prefers-reduced-motion: reduce)").matches || /[?&]still\b/.test(location.search); // ?still previews the reduced-motion layout
 
@@ -132,10 +140,9 @@ if (!calm) {
   // One atom per connection. Orbit planes are spread 180/7 degrees apart so they do not bunch.
   const atoms = CONNECTIONS.map(([name, color], i) => {
     const g = el("g", { "data-connection": name }, back);
-    const ring = el("circle", { fill: "#141416" }, g);
+    const glow = el("circle", { fill: color, filter: "url(#atom-glow)" }, g);
     const dot = el("circle", { fill: color }, g);
-    if (color === "#000000") dot.setAttribute("stroke", "#e9e9ec");   // thin light ring so black shows on dark
-    return { g, ring, dot, color, psi: (i * Math.PI) / CONNECTIONS.length, angle: (i * 2 * Math.PI) / CONNECTIONS.length, front: false };
+    return { g, glow, dot, color, plain: color === "#000000" || color === "#FFFFFF", psi: (i * Math.PI) / CONNECTIONS.length, angle: (i * 2 * Math.PI) / CONNECTIONS.length, front: false };
   });
 
   function placeAtoms(t) {
@@ -156,18 +163,22 @@ if (!calm) {
         for (const e of EYES) nearest = Math.min(nearest, ((cx - e.x) / (11 + size)) ** 2 + ((cy - e.y) / (17 + size)) ** 2);
         alpha *= 0.3 + 0.7 * Math.min(1, Math.max(0, (nearest - 0.9) / 1.1));
       }
-      a.ring.setAttribute("cx", cx); a.ring.setAttribute("cy", cy); a.ring.setAttribute("r", size + RING);
-      a.ring.setAttribute("opacity", 0.9 * alpha);
+      // White and black atoms get a halo that contrasts with whatever is behind them (page or Orbi's white body).
+      if (a.plain) {
+        const overBody = inFront && ((cx - 110) / 100) ** 2 + ((cy - 100) / 90) ** 2 < 1;
+        a.glow.setAttribute("fill", overBody || !isDark() ? "#000" : "#fff");
+      }
+      a.glow.setAttribute("cx", cx); a.glow.setAttribute("cy", cy); a.glow.setAttribute("r", size * 1.9);
+      a.glow.setAttribute("opacity", (a.plain ? 0.28 : 0.32) * alpha);
       a.dot.setAttribute("cx", cx); a.dot.setAttribute("cy", cy); a.dot.setAttribute("r", size);
       a.dot.setAttribute("opacity", alpha);
-      if (a.color === "#000000") a.dot.setAttribute("stroke-width", Math.max(0.8, size * 0.12));
     }
   }
 
   // Reduced motion: no orbiting. Park each atom where it is clearly visible (outside his body, apart from the others).
   function restAngles() {
     const placed = [];
-    const helperSpots = [-1, 1].flatMap((s) => [25, 14].map((r) => ({ x: CENTER.x + s * 30 * K, y: 100 + r * K })));
+    const helperSpots = SLOT_ANGLE.map((a, s) => ring3(a, SLOT_SIZE[s]));
     const spot = (a, th) => {
       const px = R * Math.cos(th), py = R * Math.sin(th);
       const y1 = py * Math.cos(TILT);
@@ -190,15 +201,11 @@ if (!calm) {
   }
   if (calmMotion) restAngles();
 
-  /* ----- Helpers: at most 4, two on each side (two rows). ----- */
-  const MAX = 4, LIFE = 5.5;                        // seconds before a helper leaves by itself
+  /* ----- Helpers: at most 4. Each runs around Orbi for about 20 s, then vanishes back inside him. ----- */
+  const MAX = 4, LIFE = 20, VANISH = 0.5;
   const HW = 10.5 * K, HH = 9.5 * K;
-  const slotPos = (s) => ({
-    x: CENTER.x + (s % 2 === 0 ? -30 : 30) * K,
-    y: 100 + (25 - Math.floor(s / 2) * 11) * K,
-  });
   const helpers = [];
-  let now = 0;
+  const ease = (x) => x * x * (3 - 2 * x);
 
   function makeHelper(slot, t) {
     const g = el("g", {}, helperLayer);
@@ -206,33 +213,34 @@ if (!calm) {
     const eyeL = el("ellipse", { fill: "#000" }, g), eyeR = el("ellipse", { fill: "#000" }, g);
     const arcL = el("path", { fill: "none", stroke: "#000", "stroke-width": 0.9 * K * 0.6, "stroke-linecap": "round", display: "none" }, g);
     const arcR = el("path", { fill: "none", stroke: "#000", "stroke-width": 0.9 * K * 0.6, "stroke-linecap": "round", display: "none" }, g);
-    return { g, body, eyeL, eyeR, arcL, arcR, slot, born: t, doneAt: null, phase: Math.random() * 6.28 };
+    return { g, body, eyeL, eyeR, arcL, arcR, slot, dir: slot % 2 ? -1 : 1, front: true, born: t, doneAt: null, phase: Math.random() * 6.28 };
   }
 
   function drawHelper(h, t) {
-    const pos = slotPos(h.slot);
     const age = t - h.born;
-    const p = calmMotion ? 1 : Math.min(1, Math.max(0, age / 0.28));        // grows from nothing, with a little overshoot
-    const scale = calmMotion ? 1 : Math.max(0, 1 + 0.25 * Math.sin(p * Math.PI) * (p < 1 ? 1 : 0) - (1 - p));
-    const travel = calmMotion ? 1 : p;
+    const out = calmMotion ? 1 : ease(Math.min(1, Math.max(0, age / 0.28)));          // pops out of his middle
+    const grow = calmMotion ? 1 : Math.min(1, Math.max(0, age / 0.28));
     const done = h.doneAt === null ? -1 : t - h.doneAt;
-    let alpha = 1, hop = 0;
-    if (done >= 0 && !calmMotion) {
-      hop = 7 * K * Math.sin(Math.min(1, done / 0.5) * Math.PI);
-      alpha = Math.max(0, 1 - Math.max(0, done - 0.45) / 0.45);
-    }
-    const bob = done >= 0 || calmMotion ? 0 : 1.1 * K * Math.sin(t * 4.2 + h.phase);
-    const cx = CENTER.x + (pos.x - CENTER.x) * travel;          // pops out of his middle
-    const cy = 100 + (pos.y - 100) * travel + bob - hop;
+    const q = done < 0 ? 0 : Math.min(1, done / VANISH);                              // 0 = out and about, 1 = back inside Orbi
+    const running = !calmMotion && done < 0;
+    const angle = SLOT_ANGLE[h.slot] + (calmMotion ? 0 : h.dir * (0.62 * age + 0.4 * Math.sin(0.8 * age + h.phase)));
+    const target = ring3(angle, SLOT_SIZE[h.slot]);
+    const depth = target.z / (RING_RZ * SLOT_SIZE[h.slot]);
+    const inFront = done >= 0 || age < 0.3 || target.z >= 0;                          // behind him only while out and about
+    if (inFront !== h.front) { (inFront ? helperLayer : helperBack).appendChild(h.g); h.front = inFront; }
+    const travel = out * (1 - ease(q));
+    const scale = Math.max(0, 1 + (calmMotion ? 0 : 0.25 * Math.sin(grow * Math.PI) * (grow < 1 ? 1 : 0)) - (1 - grow)) * (1 - q) * (1 + 0.28 * depth * travel);
+    const hop = running ? Math.abs(Math.sin(age * 9 + h.phase)) * 1.8 * K : 0;       // little running hops
+    const cx = 110 + (target.x - 110) * travel;
+    const cy = 100 + (target.y - 100) * travel - hop * travel;
     const w = HW * Math.max(scale, 0.001), hh = HH * Math.max(scale, 0.001);
-    h.g.setAttribute("opacity", alpha);
     h.body.setAttribute("x", cx - w / 2); h.body.setAttribute("y", cy - hh / 2);
     h.body.setAttribute("width", w); h.body.setAttribute("height", hh);
     h.body.setAttribute("rx", w * 0.42); h.body.setAttribute("ry", hh * 0.46);
-    const toward = pos.x < CENTER.x ? 1 : -1;                   // eyes look at the big Orbi
+    const toward = target.x < 110 ? 1 : -1;                                           // eyes look at the big Orbi
     [[h.eyeL, h.arcL, -1], [h.eyeR, h.arcR, 1]].forEach(([eye, arc, side]) => {
       const ex = cx + side * 2.1 * K * scale + toward * 0.5 * K;
-      if (done >= 0) {                                          // happy closed eyes
+      if (done >= 0) {                                                                // happy closed eyes while going in
         const r = 1.1 * K * scale, y = cy + 0.4 * K * scale - r * 0.34;
         eye.setAttribute("display", "none"); arc.removeAttribute("display");
         arc.setAttribute("d", `M ${ex - r * 0.94} ${y} A ${r} ${r} 0 0 1 ${ex + r * 0.94} ${y}`);
@@ -249,7 +257,7 @@ if (!calm) {
     const t = performance.now() / 1000;
     const live = helpers.filter((h) => h.doneAt === null);
     let slot;
-    if (live.length >= MAX) {                                   // oldest hops, happy, and fades; the new one takes its place
+    if (live.length >= MAX) {                                   // the oldest goes back inside Orbi; the new one takes its place
       const oldest = live.reduce((a, b) => (a.born <= b.born ? a : b));
       slot = oldest.slot;
       retire(oldest, t);
@@ -257,17 +265,18 @@ if (!calm) {
       const used = new Set(live.map((h) => h.slot));
       slot = [0, 1, 2, 3].find((s) => !used.has(s));
     }
+    cull(t);
     helpers.push(makeHelper(slot, t));
     start();
     renderOnce(t);
-    if (calmMotion) setTimeout(() => cull(performance.now() / 1000 + 100), LIFE * 1000); // no animation: simply disappear
+    if (calmMotion) setTimeout(() => { cull(performance.now() / 1000); }, LIFE * 1000 + 50);   // no animation: they just disappear
   }
 
   function cull(t) {
     for (let i = helpers.length - 1; i >= 0; i--) {
       const h = helpers[i];
-      if (h.doneAt === null && t - h.born > LIFE) retire(h, t);
-      if (h.doneAt !== null && (calmMotion || t - h.doneAt > 0.95)) { h.g.remove(); helpers.splice(i, 1); }
+      if (h.doneAt === null && t - h.born >= LIFE) retire(h, t);
+      if (h.doneAt !== null && (calmMotion || t - h.doneAt > VANISH)) { h.g.remove(); helpers.splice(i, 1); }
     }
   }
 

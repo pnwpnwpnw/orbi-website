@@ -37,12 +37,14 @@
       <button class="mascot" id="mascot" type="button" aria-label="Orbi, the mascot. Press to send out a helper.">
         <svg id="orbi-svg" viewBox="-50 -50 320 300" aria-hidden="true">
           <defs>
+            <filter id="atom-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="7"/></filter>
             <clipPath id="body-clip"><rect x="10" y="10" width="200" height="180" rx="90"/></clipPath>
             <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#ececec"/><stop offset="1" stop-color="#dcdcdc"/>
             </linearGradient>
           </defs>
           <g id="atoms-back"></g>
+          <g id="helpers-back"></g>
           <g class="body">
             <rect x="10" y="10" width="200" height="180" rx="90" fill="#fff" stroke="#e4e4e4"/>
             <g clip-path="url(#body-clip)"><ellipse cx="110" cy="205" rx="130" ry="62" fill="url(#shade)"/></g>
