@@ -116,7 +116,7 @@ if (!calm) {
   const TILT = (68 * Math.PI) / 180;
   const LAP = 2;                                     // seconds per lap while "working"
   const CONNECTIONS = [
-    ["Claude Code", "#D97757"], ["Claude Chat", "#F2AE6B"], ["ChatGPT", "#59A6FA"], ["Vercel", "#000000"],
+    ["Code agent", "#D97757"], ["Chat", "#F2AE6B"], ["ChatGPT", "#59A6FA"], ["Vercel", "#000000"],
     ["Gmail", "#EA4335"], ["Slack", "#2EB67D"], ["Notion", "#FFFFFF"],
   ];
   // Helpers run around Orbi on a flat horizontal loop in 3D: in front of him, out to the side, behind him, and back.
